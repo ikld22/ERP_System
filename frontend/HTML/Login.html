@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        * {
+            scroll-behavior: smooth;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #FFFEFA;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .main {
+            width:400px;
+            height: 400px;
+            background-color: rgb(217, 217, 217);
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;
+            padding: 20px;
+            border-radius: 10px;
+            border: 5px solid #007BFF;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* إضافة ظل خارجي */
+        }
+        .main h1 {
+            color: #007BFF;
+            margin-bottom: 20px;
+        }
+        .main input {
+            width: 300px;
+            border-radius: 10px;
+            border: 2px solid #000000;
+            padding: 10px;
+            margin: 10px;
+         
+        }
+        .main button {
+            width: 300px;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: 2px solid #000000;
+            border: none;
+            cursor: pointer;
+        }
+        .main button:hover {
+            background-color: #0056b3; /* تغيير لون الزر عند التمرير */
+        }
+        .main a {
+            text-decoration: none; /* إزالة الخط السفلي */
+            color: #007BFF;
+            margin-top: 10px;
+        }
+        .main a:hover {
+            text-decoration: underline; /* إضافة خط سفلي عند التمرير */
+        }
+    </style>
+</head>
+<body>
+    <form action="Login.php" method="post" id="Login-form">
+        <div class="main">
+            <h1>Login </h1>
+            <input type="text" name="employee_id" id="email" placeholder="id"><br>
+            <input type="password" name="password" id="password" placeholder="Password"><br>
+            <button type="submit">Login</button><br>
+            <a href="forgot_password.php">Forgot Password?</a><br>
+            <a href="Registerjop.html">Create New Account</a>
+        </div>
+
+    </form>
+</body>
+</html>

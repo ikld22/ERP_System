@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Manager Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .navbar {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 16px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            width: 90%;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .section h3 {
+            margin-bottom: 15px;
+            color: #007BFF;
+        }
+        .section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .section table, .section th, .section td {
+            border: 1px solid #ccc;
+        }
+        .section th, .section td {
+            padding: 10px;
+            text-align: left;
+        }
+        .section th {
+            background-color: #f9f9f9;
+        }
+        .section button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .section button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <h1>General Manager Page</h1>
+        <div class="nav-links">
+            <a href="#assign-tasks">Assign Tasks</a>
+            <a href="#reports">Reports</a>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="container">
+        <!-- General Manager Info -->
+        <div class="section">
+            <h3>General Manager Information</h3>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Name</th>
+                        <td>Michael Anderson</td>
+                    </tr>
+                    <tr>
+                        <th>Employee ID</th>
+                        <td>12345</td>
+                    </tr>
+                    <tr>
+                        <th>Position</th>
+                        <td>General Manager</td>
+                    </tr>
+                    <tr>
+                        <th>Department</th>
+                        <td>Corporate</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>michael.anderson@example.com</td>
+                    </tr>
+                    <tr>
+                        <th>Extension</th>
+                        <td>101</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Assign Tasks -->
+        <div id="assign-tasks" class="section">
+            <h3>Assign Tasks</h3>
+            <form>
+                <label for="department">Select Department:</label>
+                <select id="department" style="width: 100%; margin-bottom: 10px;">
+                    <option value="IT">IT</option>
+                    <option value="HR">HR</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Marketing">Marketing</option>
+                </select>
+                <label for="recipient">Select Recipient:</label>
+                <select id="recipient" style="width: 100%; margin-bottom: 10px;">
+                    <option value="manager">Department Manager</option>
+                    <option value="employee">Specific Employee</option>
+                </select>
+                <label for="employee-name">Employee/Manager Name:</label>
+                <input type="text" id="employee-name" style="width: 100%; margin-bottom: 10px;">
+                <label for="task-type">Task Type:</label>
+                <select id="task-type" style="width: 100%; margin-bottom: 10px;">
+                    <option value="daily">Daily</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+                <label for="task-details">Task Details:</label>
+                <textarea id="task-details" style="width: 100%; height: 100px; margin-bottom: 10px;"></textarea>
+                <button type="submit">Assign Task</button>
+            </form>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="reports" class="section">
+            <h3>Reports</h3>
+            <button>Submit a Report</button>
+        </div>
+    </div>
+</body>
+</html>

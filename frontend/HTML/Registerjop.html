@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        * {
+            scroll-behavior: smooth;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #FFFEFA;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .main {
+            width: 400px;
+            height: 500px;
+            background-color: rgb(217, 217, 217);
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;
+            padding: 20px;
+            border-radius: 10px;
+            border: 5px solid #007BFF;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .main h1 {
+            color: #007BFF;
+            margin-bottom: 20px;
+        }
+        .main input {
+            width: 300px;
+            border-radius: 10px;
+            border: 2px solid #000000;
+            padding: 10px;
+            margin: 10px;
+        }
+        .main button {
+            width: 300px;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .main button:hover {
+            background-color: #0056b3;
+        }
+        .main a {
+            text-decoration: none;
+            color: #007BFF;
+            margin-top: 10px;
+        }
+        .main a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <form action="registerjop.php" method="post">
+             <div class="main">
+            <h1>Register for Job Portal</h1>
+            <input type="text" name="name" id="name" placeholder="Full Name"><br>
+            <input type="email" name="email" id="email" placeholder="Email"><br>
+            <input type="password" name="password" id="password" placeholder="Password"><br>
+            <input type="phone_number" name="phone" id="number" placeholder="phone number"><br>
+            <button type="submit">Register</button><br>
+            <a href="Loginjop.html">Already have an account? Login</a>
+            </div>
+       </form>
+</body>
+</html>
