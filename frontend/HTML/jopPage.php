@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 require 'conn.php';
 
 if (!isset($_SESSION['user_id'])) {
@@ -12,13 +11,6 @@ try {
     // استعلام الوظائف المتاحة
     $jobsStmt = $pdo->query("SELECT * FROM jobs");
 
-    // استعلام الوظائف التي تم التقديم عليها
-    $appliedJobsStmt = $pdo->prepare("SELECT jobs.job_id, jobs.job_title, jobs.job_description, job_applications.applied_date 
-                                      FROM job_applications 
-                                      JOIN jobs ON job_applications.job_id = jobs.job_id 
-                                      WHERE job_applications.user_id = :user_id");
-    $appliedJobsStmt->execute(['user_id' => $_SESSION['user_id']]);
-    
     // استعلام بيانات المتقدم
     $applicantStmt = $pdo->prepare("SELECT * FROM user_info_jop WHERE user_id = :user_id");
     $applicantStmt->execute(['user_id' => $_SESSION['user_id']]);
@@ -28,53 +20,110 @@ try {
         echo "<p>No applicant data found. Please update your profile.</p>";
         exit;
     }
+
+    // متغير لتتبع ما إذا تم العثور على أي وظيفة متوافقة
+    $foundMatchingJob = false;
+
+    // استعراض الوظائف المتاحة
+    while ($job = $jobsStmt->fetch(PDO::FETCH_ASSOC)) {
+        // دالة التحقق من التوافق بين الوظيفة والمتقدم
+        $compatibilityScore = checkJobCompatibility($applicant, $job);
+        
+        // عرض الوظيفة فقط إذا كان هناك تطابق
+        if ($compatibilityScore > 0) {
+            $foundMatchingJob = true;
+            
+            // حفظ النتيجة في قاعدة البيانات
+            saveMatchResult($_SESSION['user_id'], $job['job_id'], $compatibilityScore);
+
+            echo "<div class='job-listing'>";
+            echo "<h3>" . htmlspecialchars($job['job_title']) . "</h3>";
+            echo "<p>" . htmlspecialchars($job['job_description']) . "</p>";
+            echo "<p>Compatibility: " . $compatibilityScore . "%</p>";
+            echo "</div>";
+        }
+    }
+
+   
 } catch (PDOException $e) {
     die("Database error: " . $e->getMessage());
 }
 
 // دالة التحقق من التوافق بين الوظيفة والمتقدم
-function checkJobCompatibility($features, $job) {
-    $encodedFeatures = escapeshellarg(json_encode($features));
+function checkJobCompatibility($applicant, $job) {
+    // التأكد من أن المتقدم لديه المهارات المطلوبة
+    $applicantSkills = isset($applicant['skills']) ? explode(',', $applicant['skills']) : [];
+    $requiredSkills = explode(',', $job['skills_required']);
 
-    // تأكد من استخدام المسار الكامل لـ Python
-    $pythonPath = "C:\Users\ccvn5\AppData\Local\Programs\Python\Python312\python.exe"; // Adjust this path to your Python installation
-    $scriptPath = "C:\\wamp64\\www\\ERP_System\\frontend\\HTML\\predict_employee.py"; // Adjust this path to your script
-    $command = "$pythonPath $scriptPath $encodedFeatures";
+    // التأكد من أن المتقدم لديه الخبرة المطلوبة
+    $applicantExperience = isset($applicant['experience']) ? explode(',', $applicant['experience']) : [];
+    $requiredExperience = explode(',', $job['experience_required']);
 
-    // تنفيذ السكربت
-    $output = shell_exec($command);
+    // التأكد من أن المتقدم لديه التعليم المطلوب
+    $applicantEducation = isset($applicant['education']) ? explode(',', $applicant['education']) : [];
+    $requiredEducation = explode(',', $job['education_required']);
 
-    if ($output === null) {
-        error_log("Python script failed to execute for features: $encodedFeatures");
-        return "Prediction failed. There was an error processing your data.";
-    }
+    // حساب عدد التوافقات
+    $skillCount = 0;
+    $experienceCount = 0;
+    $educationCount = 0;
 
-    // Log the output for debugging
-    error_log("Python script output: $output");
-
-    // استخراج النتيجة
-    $compatibility = floatval($output);
-
-    // فحص المهارات المطلوبة مقارنة بمهارات المتقدم
-    $applicantSkills = explode(',', $features[1]); // assuming skills are stored as a comma-separated string
-    $requiredSkills = explode(',', $job['skills_required']); // assuming skills are stored as a comma-separated string
-    
-    // إذا كان المتقدم يملك مهارة واحدة على الأقل من المهارات المطلوبة
     foreach ($requiredSkills as $skill) {
         if (in_array(trim($skill), $applicantSkills)) {
-            return "50% Match"; // يمكن التقديم إذا كانت المهارات 50%
+            $skillCount++;
         }
     }
 
-    if ($compatibility >= 0.5) {
-        return "Good Match"; // يمكن التقديم إذا كانت التوافقية 50% أو أكثر
-    } elseif ($compatibility >= 0.2) {
-        return "50% Match";
+    foreach ($requiredExperience as $experience) {
+        if (in_array(trim($experience), $applicantExperience)) {
+            $experienceCount++;
+        }
+    }
+
+    foreach ($requiredEducation as $education) {
+        if (in_array(trim($education), $applicantEducation)) {
+            $educationCount++;
+        }
+    }
+
+    // تحديد نسبة التوافق
+    if ($skillCount == count($requiredSkills) && $experienceCount == count($requiredExperience) && $educationCount == count($requiredEducation)) {
+        return 100;
+    } elseif ($skillCount >= 2 && $experienceCount >= 2 && $educationCount >= 2) {
+        return 70;
+    } elseif ($skillCount >= 1 && $experienceCount >= 1 && $educationCount >= 1) {
+        return 40;
     } else {
-        return "Not a Good Match";
+        return 0;
+    }
+}
+
+// دالة لحفظ النتيجة في جدول job_applications
+function saveMatchResult($user_id, $job_id, $matchPercentage) {
+    global $pdo;
+
+    // التحقق مما إذا كان هناك سجل بالفعل
+    $checkQuery = "SELECT * FROM job_applications WHERE user_id = ? AND job_id = ?";
+    $stmt = $pdo->prepare($checkQuery);
+    $stmt->execute([$user_id, $job_id]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($result) {
+        // تحديث النسبة إذا كان هناك سجل
+        $updateQuery = "UPDATE job_applications SET ApplicantMatch = ? WHERE user_id = ? AND job_id = ?";
+        $stmt = $pdo->prepare($updateQuery);
+        $stmt->execute([$matchPercentage, $user_id, $job_id]);
+    } else {
+        // إدخال سجل جديد إذا لم يكن موجودًا
+        $insertQuery = "INSERT INTO job_applications (user_id, job_id, ApplicantMatch) VALUES (?, ?, ?)";
+        $stmt = $pdo->prepare($insertQuery);
+        $stmt->execute([$user_id, $job_id, $matchPercentage]);
     }
 }
 ?>
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -174,31 +223,27 @@ function checkJobCompatibility($features, $job) {
     <div class="content">
         <div id="available-jobs" class="section active">
             <h2>Available Jobs</h2>
+            <?php
+            // إذا لم يتم العثور على وظائف متوافقة
+    if (!$foundMatchingJob) {
+        echo "<p>No matching jobs found.</p>";
+    }
+  ?>
             <?php  
-            while ($job = $jobsStmt->fetch(PDO::FETCH_ASSOC)): 
-                $applicantFeatures = [
-                    $applicant['experience'],
-                    $applicant['skills'],
-                    $applicant['education'],
-                ];
-                $compatibility = checkJobCompatibility($applicantFeatures, $job);
-            ?> 
-            <div class="job-box">
-                <h3><?= htmlspecialchars($job['job_title']); ?></h3>
-                <p>Description: <?= htmlspecialchars($job['job_description']); ?></p>
-                <p>Experience Required: <?= htmlspecialchars($job['experience_required']); ?> years</p>
-                <p>Skills: <?= htmlspecialchars($job['skills_required']); ?></p>
-                <p>Education Required: <?= htmlspecialchars($job['education_required']); ?></p>
-                <p>Job Date: <?= htmlspecialchars($job['created_at']); ?></p>
-                <p>Compatibility: <?= htmlspecialchars($compatibility); ?></p>
-                <?php if ($compatibility === "Good Match" || $compatibility === "50% Match"): ?>
-                    <button onclick="applyJob(<?= $job['job_id']; ?>)">Apply</button>
-                <?php else: ?>
-                    <button disabled>Not Compatible</button>
-                <?php endif; ?>
-            </div>
-            <?php endwhile; ?>
-        </div>
+while ($job = $jobsStmt->fetch(PDO::FETCH_ASSOC)): ?>
+    <div class="job-box">
+        <h3><?= htmlspecialchars($job['job_title']); ?></h3>
+        <p>Description: <?= htmlspecialchars($job['job_description']); ?></p>
+        <p>Experience Required: <?= htmlspecialchars($job['experience_required']); ?> years</p>
+        <p>Skills: <?= htmlspecialchars($job['skills_required']); ?></p>
+        <p>Education Required: <?= htmlspecialchars($job['education_required']); ?></p>
+        <p>Job Date: <?= htmlspecialchars($job['created_at']); ?></p>
+
+        <button onclick="applyJob(<?= $job['job_id']; ?>)">Apply</button>
+    </div>
+<?php endwhile; ?>
+
+            
 
         <div id="applied-jobs" class="section">
             <h2>Applied Jobs</h2>
